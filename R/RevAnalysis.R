@@ -9,6 +9,7 @@
 #' la funzione produce come output un oggetto data.frame di R da assegnare alla variabile import
 #' @examples 
 #' import <- import()
+#' @export
 import <- function() {
 
   nome_file_import <- readline("inserire nome del file caricato: ")
@@ -26,8 +27,9 @@ import <- function() {
 #' La funzione pulisce il file excel precedentemente importato. La funzione va eseguita dopo aver eseguito import().
 #' @return
 #' la funzione produce come output un oggetto data.frame di R da assegnare alla variabile moviment_cleaned
-#' @examples 
+#' @examples
 #' movimenti_cleaned <- clean()
+#' @export
 clean <- function() {
   
   movimenti_cleaned <-  movimenti %>%
@@ -49,6 +51,7 @@ clean <- function() {
 #' La funzione produce come output un commento sulla gestione delle fatture pagate e dei reintegri effettuati evidenziando una corretta o un'errata gestione
 #' @examples 
 #' pagato_reintegri()
+#' @export
 pagato_reintegri <- function() {
   
   inizio <- dmy(readline("selezionare la data di inizio nel formato gg-mm-aaaa: "))
@@ -92,6 +95,7 @@ pagato_reintegri <- function() {
 #' La funzione produce come output primario un file Excel che permette di vedere il saldo giornaliero del dealer in oggetto.
 #' @examples
 #' utilizzo_daily()
+#' @export
 utilizzo_daily <- function() {
   
   utilizzo_giornaliero <- movimenti_cleaned %>%
@@ -138,6 +142,7 @@ utilizzo_daily <- function() {
 #' La funzione produce come output primario un file Excel che permette di vedere quali bonifici di reintegro sono stati effettuati in presenza di saldo attivo
 #' @examples 
 #' valutazione_reintegri_saldo_attivo()
+#' @export
 valutazione_reintegri_saldo_attivo <- function() {
   
   #valutare se reintegro è stato effettuato quando il giorno precedente c'era saldo attivo
@@ -159,4 +164,3 @@ valutazione_reintegri_saldo_attivo <- function() {
   
   return(reintegri)
 }
-
