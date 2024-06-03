@@ -1,0 +1,6 @@
+Package: RevAnalysis
+Type: Package
+Title: Revolving Credit Line Analysis Helper
+Version: 0.1
+Encoding: UTF-8
+RoxygenNote: 7.3.1
