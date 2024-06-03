@@ -4,3 +4,13 @@ Title: Revolving Credit Line Analysis Helper
 Version: 0.1
 Encoding: UTF-8
 RoxygenNote: 7.3.1
+Authors@R: person("Anthony", "Tricarico", email = "tricarico672@outlook.it",
+  role = c("aut", "cre"))
+Imports:
+    tidyverse,
+    readxl,
+    openxlsx,
+    readxl,
+    ggplot2,
+    ggthemes,
+    devtools
