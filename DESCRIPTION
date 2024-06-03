@@ -14,9 +14,4 @@ Imports:
     ggplot2,
     ggthemes,
     devtools
-Exports:
-    import,
-    clean,
-    pagato_reintegri,
-    utilizzo_daily,
-    valutazione_reintegri_saldo_attivo
+
