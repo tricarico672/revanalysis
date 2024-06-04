@@ -1,6 +1,7 @@
 Package: RevAnalysis
 Type: Package
 Title: Revolving Credit Line Analysis Helper
+Description: La libreria RevAnalysis contiene una serie di funzioni che facilitano l'analisi del Revolving. Ogni funzione contiene la relativa documentazione che ne spiega l'utilizzo.
 Version: 0.1
 Encoding: UTF-8
 RoxygenNote: 7.3.1
