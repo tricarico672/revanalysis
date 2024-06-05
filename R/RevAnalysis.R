@@ -120,7 +120,7 @@ utilizzo_daily <- function() {
       geom_line() +
       geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
       labs(title = "Utilizzo Revolving") +
-      xlab("Data Operazione") +
+      xlab("Data") +
       ylab("Saldo") +
       theme(plot.title = element_text(hjust = 0.5, face = "bold.italic"),
             axis.text.y = element_text(angle = 0)) +
