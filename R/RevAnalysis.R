@@ -105,7 +105,7 @@ utilizzo_daily <- function() {
   
   write.xlsx(utilizzo_giornaliero, "utilizzo_giornaliero.xlsx")
   
-  print("file Excel generato e disponibile in /cloud/project/output/excel/utilizzo_giornaliero.xlsx")
+  print(paste("file Excel generato e disponibile in ", getwd()))
   
   grafico_domanda <- readline("vuoi produrre il grafico dell'utilizzo? (SI/NO): ")
   
