@@ -24,21 +24,38 @@ import <- function() {
 #' @title clean
 #' @author Anthony Tricarico
 #' @description 
-#' La funzione pulisce il file excel precedentemente importato. La funzione va eseguita dopo aver eseguito import().
+#' La funzione pulisce il file excel precedentemente importato permettendo anche di gestire due "accordati" diversi in base alla data di operatività della linea. La funzione va eseguita dopo aver eseguito import().
 #' @return
-#' la funzione produce come output un oggetto data.frame di R da assegnare alla variabile moviment_cleaned
+#' la funzione produce come output un oggetto data.frame di R da assegnare alla variabile movimenti_cleaned
 #' @examples
 #' movimenti_cleaned <- clean()
 #' @export
 clean <- function() {
   
-  movimenti_cleaned <-  movimenti %>%
-    select(-divisa) %>%
-    mutate(data_operazione = dmy(data_operazione),
-           data_valuta = dmy(data_valuta),
-           descrizione = factor(descrizione),
-           saldo = round(rev(cumsum(rev(importo))),2),
-           utilizzo = ifelse(saldo < 0, abs(saldo/accordato), 0))
+   domanda_accordato <- readline("Il dealer ha avuto un incremento nel periodo? (SI/NO): ")
+  
+  if(toupper(domanda_accordato) == "SI") {
+    inizio <- dmy(readline("inserire la data di operatività dell'attuale accordato (gg-mm-aaaa): "))
+    
+    movimenti_cleaned <-  movimenti %>%
+      select(-divisa) %>%
+      mutate(data_operazione = dmy(data_operazione),
+             data_valuta = dmy(data_valuta),
+             descrizione = factor(descrizione),
+             saldo = round(rev(cumsum(rev(importo))),2),
+             accordato = ifelse(data_operazione >= inizio, 
+                                accordato,
+                                as.numeric(readline(paste("inserire l'accordato precedente al", inizio, ":")))),
+             utilizzo = ifelse(saldo < 0, abs(saldo/accordato), 0))
+  } else {
+    movimenti_cleaned <-  movimenti %>%
+      select(-divisa) %>%
+      mutate(data_operazione = dmy(data_operazione),
+             data_valuta = dmy(data_valuta),
+             descrizione = factor(descrizione),
+             saldo = round(rev(cumsum(rev(importo))),2),
+             utilizzo = ifelse(saldo < 0, abs(saldo/accordato), 0))
+  }
   
   return(movimenti_cleaned)
 }
