@@ -181,3 +181,58 @@ valutazione_reintegri_saldo_attivo <- function() {
   
   return(reintegri)
 }
+
+
+#' @title classificazione_reintegri
+#' @author Anthony Tricarico
+#' @description 
+#' La funzione produce come output un file Excel che riepiloga e categorizza i vari bonifici di reintegro effettuati dal dealer nell'arco di tempo specificato dal file importato originariamente
+#' @return
+#' La funzione produce come output primario un file Excel che categorizza i vari bonifici di reintegro effettuati dal dealer nell'arco di tempo specificato dal file importato originariamente
+#' @examples 
+#' classificazione_reintegri()
+#' @export
+classificazione_reintegri <- function() {
+  
+  reintegri_giornalieri <- movimenti_cleaned %>%
+    group_by(data_operazione, descrizione) %>%
+    summarize(somma = sum(importo)) %>%
+    filter(descrizione == "Bonifico a Vs Favore")
+  
+  utilizzo_giornaliero <- movimenti_cleaned %>%
+    filter(!is.na(data_operazione)) %>%
+    mutate(time_diff = (data_operazione) - (lag(data_operazione))) %>%
+    filter(time_diff <= -1 | is.na(time_diff)) %>%
+    select(data_operazione, saldo, utilizzo, accordato)
+  
+  
+  joined_df <- reintegri_giornalieri %>%
+    right_join(utilizzo_giornaliero, by = "data_operazione") %>%
+    arrange(desc(data_operazione)) %>%
+    mutate(saldo_giorno_precedente = coalesce(lead(saldo), 0),
+           categoria = if_else(lead(saldo, 0, default = 0) > 0, "bonifici effettuati in presenza di saldo attivo", "corretto")) 
+  
+  joined_df <- reintegri_giornalieri %>%
+    right_join(utilizzo_giornaliero, by = "data_operazione") %>%
+    arrange(desc(data_operazione))
+  
+  saldo_giorno_precedente <- lead(joined_df$saldo, default = 0)
+  accordato_giorno_precedente <- lead(joined_df$accordato, default = 0)
+  
+  joined_df$saldo_precedente <- saldo_giorno_precedente
+  joined_df$accordato_precedente <- accordato_giorno_precedente
+  
+  joined_df <- joined_df %>%
+    mutate(categoria = ifelse(saldo_precedente > 0, "bonifici effettuati in presenza di saldo attivo", 
+                              ifelse(abs(saldo_precedente) < (0.75 * accordato_precedente), "bonifici non necessari (utilizzo < 75% dell'accordato)", 
+                                     ifelse(somma > accordato, "bonifici che superano il totale accordato", "corretto")))) %>%
+    filter(descrizione == "Bonifico a Vs Favore") %>%
+    select(-accordato_precedente)
+  
+  nome_file <- "classificazione_bonifici_di_reintegro.xlsx"
+  
+  write.xlsx(joined_df, nome_file)
+  
+  print(paste("File Excel generato col nome:", nome_file))
+  
+}
