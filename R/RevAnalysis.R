@@ -205,29 +205,24 @@ classificazione_reintegri <- function() {
     filter(time_diff <= -1 | is.na(time_diff)) %>%
     select(data_operazione, saldo, utilizzo, accordato)
   
-  
-  joined_df <- reintegri_giornalieri %>%
-    right_join(utilizzo_giornaliero, by = "data_operazione") %>%
-    arrange(desc(data_operazione)) %>%
-    mutate(saldo_giorno_precedente = coalesce(lead(saldo), 0),
-           categoria = if_else(lead(saldo, 0, default = 0) > 0, "bonifici effettuati in presenza di saldo attivo", "corretto")) 
-  
   joined_df <- reintegri_giornalieri %>%
     right_join(utilizzo_giornaliero, by = "data_operazione") %>%
     arrange(desc(data_operazione))
   
-  saldo_giorno_precedente <- lead(joined_df$saldo, default = 0)
-  accordato_giorno_precedente <- lead(joined_df$accordato, default = 0)
+  saldo_giorno_precedente <- lead(utilizzo_giornaliero$saldo, default = 0)
+  accordato_giorno_precedente <- lead(utilizzo_giornaliero$accordato, default = 0)
   
   joined_df$saldo_precedente <- saldo_giorno_precedente
   joined_df$accordato_precedente <- accordato_giorno_precedente
   
-  joined_df <- joined_df %>%
+  output <- joined_df %>%
     mutate(categoria = ifelse(saldo_precedente > 0, "bonifici effettuati in presenza di saldo attivo", 
                               ifelse(abs(saldo_precedente) < (0.75 * accordato_precedente), "bonifici non necessari (utilizzo < 75% dell'accordato)", 
                                      ifelse(somma > accordato, "bonifici che superano il totale accordato", "corretto")))) %>%
     filter(descrizione == "Bonifico a Vs Favore") %>%
     select(-accordato_precedente)
+  
+  write.xlsx(output, "classificazione_bonifici_di_reintegro.xlsx")
   
   nome_file <- "classificazione_bonifici_di_reintegro.xlsx"
   
