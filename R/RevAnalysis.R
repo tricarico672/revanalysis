@@ -1,14 +1,14 @@
 
-#' @title Import
+#' @title import
 #' @author Anthony Tricarico
 #' @description 
-#' La funzione importa il file excel per l'analisi eseguendo automaticamente tutti i passaggi per preparare i dati alla corretta gestione nei passaggi successivi
+#' La funzione importa il file excel per l'analisi eseguendo automaticamente tutti i passaggi per preparare i dati alla corretta gestione nei passaggi successivi. Il file Excel che viene caricato deve provenire da TFSBank e deve essere anonimizzato rimuovendo la colonna "Descrizione" dal file dopo averlo aperto con Excel. Inoltre, il file non deve contenere righe bianche all'inizio, ma la prima riga deve essere occupata dai nomi dei vari campi (da non modificare!).
 #' @details
 #' è importante fornire il nome del file da importare in maniera corretta esattamente come appare nella cartella dove è stato salvato
 #' @return
 #' la funzione produce come output un oggetto data.frame di R da assegnare alla variabile import
 #' @examples 
-#' import <- import()
+#' movimenti <- import()
 #' @export
 import <- function() {
 
