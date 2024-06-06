@@ -226,8 +226,6 @@ classificazione_reintegri <- function() {
   
   nome_file <- "classificazione_bonifici_di_reintegro.xlsx"
   
-  write.xlsx(joined_df, nome_file)
-  
   print(paste("File Excel generato col nome:", nome_file))
   
 }
