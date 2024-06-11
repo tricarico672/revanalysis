@@ -207,24 +207,70 @@ classificazione_reintegri <- function() {
   
   joined_df <- reintegri_giornalieri %>%
     right_join(utilizzo_giornaliero, by = "data_operazione") %>%
+    arrange(desc(data_operazione)) %>%
+    mutate(saldo_giorno_precedente = coalesce(lead(saldo), 0),
+           categoria = if_else(lead(saldo, 0, default = 0) > 0, "bonifici effettuati in presenza di saldo attivo", "corretto")) 
+  
+  joined_df <- reintegri_giornalieri %>%
+    right_join(utilizzo_giornaliero, by = "data_operazione") %>%
     arrange(desc(data_operazione))
   
-  saldo_giorno_precedente <- lead(utilizzo_giornaliero$saldo, default = 0)
-  accordato_giorno_precedente <- lead(utilizzo_giornaliero$accordato, default = 0)
+  saldo_giorno_precedente <- lead(joined_df$saldo, default = 0)
+  accordato_giorno_precedente <- lead(joined_df$accordato, default = 0)
   
   joined_df$saldo_precedente <- saldo_giorno_precedente
   joined_df$accordato_precedente <- accordato_giorno_precedente
   
-  output <- joined_df %>%
-    mutate(categoria = ifelse(saldo_precedente > 0, "bonifici effettuati in presenza di saldo attivo", 
-                              ifelse(abs(saldo_precedente) < (0.75 * accordato_precedente), "bonifici non necessari (utilizzo < 75% dell'accordato)", 
-                                     ifelse(somma > accordato, "bonifici che superano il totale accordato", "corretto")))) %>%
-    filter(descrizione == "Bonifico a Vs Favore") %>%
-    select(-accordato_precedente)
+  fatture_pagate <- movimenti_cleaned %>%
+    filter(descrizione == "Pagamenti diversi") %>%
+    group_by(data_operazione) %>%
+    summarize(fatture_pagate = sum(importo)) %>%
+    arrange(desc(data_operazione))
   
-  write.xlsx(output, "classificazione_bonifici_di_reintegro.xlsx")
+  anticipi_TMI <- movimenti_cleaned %>%
+    filter(descrizione == "Giroconto Anticipazioni TMI") %>%
+    group_by(data_operazione) %>%
+    summarize(anticipazioni_TMI = sum(importo)) %>%
+    arrange(desc(data_operazione))
+  
+  addebito_estinzioni <- movimenti_cleaned %>%
+    filter(descrizione == "Addebito Estinz. Finanziamento") %>%
+    group_by(data_operazione) %>%
+    summarize(addebito_estinzioni = sum(importo)) %>%
+    arrange(desc(data_operazione))
+  
+  liquidazioni_finanziamento <- movimenti_cleaned %>%
+    filter(descrizione == "Accredito per liq.ne finan.to") %>%
+    group_by(data_operazione) %>%
+    summarize(liquidazioni_finanziamento = sum(importo)) %>%
+    arrange(desc(data_operazione))
+  
+  domanda_attivo <- readline("vuoi caricare anche i dati relativi ad entrate e uscite (SI/NO): ")
+  
+  if (toupper(domanda_attivo) == "SI"){
+    joined_df <- joined_df %>%
+      mutate(categoria = ifelse(saldo_precedente > 0, "bonifici effettuati in presenza di saldo attivo", 
+                                ifelse(abs(saldo_precedente) < (0.75 * accordato_precedente), "bonifici non necessari (utilizzo < 75% dell'accordato)", 
+                                       ifelse(somma > accordato, "bonifici che superano il totale accordato", "corretto")))) %>%
+      filter(descrizione == "Bonifico a Vs Favore") %>%
+      select(-accordato_precedente) %>%
+      full_join(fatture_pagate, by = "data_operazione") %>%
+      full_join(anticipi_TMI, by = "data_operazione") %>%
+      full_join(addebito_estinzioni, by = "data_operazione") %>%
+      full_join(liquidazioni_finanziamento, by = "data_operazione") %>%
+      arrange(desc(data_operazione))
+  } else {
+    joined_df <- joined_df %>%
+      mutate(categoria = ifelse(saldo_precedente > 0, "bonifici effettuati in presenza di saldo attivo", 
+                                ifelse(abs(saldo_precedente) < (0.75 * accordato_precedente), "bonifici non necessari (utilizzo < 75% dell'accordato)", 
+                                       ifelse(somma > accordato, "bonifici che superano il totale accordato", "corretto")))) %>%
+      filter(descrizione == "Bonifico a Vs Favore") %>%
+      select(-accordato_precedente)
+  }
   
   nome_file <- "classificazione_bonifici_di_reintegro.xlsx"
+  
+  write.xlsx(joined_df, nome_file)
   
   print(paste("File Excel generato col nome:", nome_file))
   
