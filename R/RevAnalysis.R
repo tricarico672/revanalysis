@@ -276,18 +276,19 @@ classificazione_reintegri <- function() {
   domanda_grafico <- readline("Vuoi generare il grafico del dettaglio classificazione bonifici di reintegro? (SI/NO): ")
   
   grafico_classificazione <- if (toupper(domanda_grafico) == "SI"){
-    joined_df %>%
+    joined_df2 <- joined_df %>%
+      mutate(categoria = ifelse(categoria == "bonifici effettuati in presenza di saldo attivo", "SA", 
+                                ifelse(categoria == "bonifici non necessari (utilizzo < 75% dell'accordato)", "B < 75%", 
+                                       ifelse(categoria == "bonifici che superano il totale accordato", "BSA", "C")))) %>%
+      filter(!is.na(categoria)) %>%
       arrange(categoria) %>%
-      mutate(categoria = factor(categoria,
-                                 levels = c("bonifici che superano il totale accordato",
-                                            "bonifici effettuati in presenza di saldo attivo",
-                                            "bonifici non necessari (utilizzo < 75% dell'accordato)",
-                                            "corretto"))) %>%
-      filter(descrizione == "Bonifico a Vs Favore") %>%
-      ggplot(aes(x = categoria, fill= categoria)) +
+      mutate(categoria = factor(categoria, 
+                                levels = c("B < 75%", "BSA","C", "SA")))
+    
+      ggplot(joined_df2, aes(x = categoria, fill= categoria)) +
       geom_bar() +
       geom_text(aes(label = ..count..), stat = "count", vjust = -.3) +
-      scale_fill_discrete(labels = c("BSA", "SA", "B < 75%", "C")) +
+      scale_fill_discrete(labels = unique(subset(joined_df2$categoria, !is.na(joined_df2$categoria)))) +
       labs(y = "Conteggio Bonifici",
            title = "Classificazione Bonifici",
            caption = "SA: Effettuati in Presenza di Saldo Attivo al giorno precedente\n
