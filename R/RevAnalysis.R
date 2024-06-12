@@ -302,5 +302,5 @@ classificazione_reintegri <- function() {
             legend.position = "top",
             legend.title = element_blank())
   }
-  
+  return(grafico_classificazione)
 }
