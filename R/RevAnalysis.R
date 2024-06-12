@@ -193,7 +193,6 @@ valutazione_reintegri_saldo_attivo <- function() {
 #' classificazione_reintegri()
 #' @export
 classificazione_reintegri <- function() {
-  
   reintegri_giornalieri <- movimenti_cleaned %>%
     group_by(data_operazione, descrizione) %>%
     summarize(somma = sum(importo)) %>%
@@ -278,20 +277,21 @@ classificazione_reintegri <- function() {
   
   grafico_classificazione <- if (toupper(domanda_grafico) == "SI"){
     joined_df %>%
-      mutate(decrizione = factor(descrizione,
-                                    levels = c("bonifici effettuati in presenza di saldo attivo",
-                                               "bonifici non necessari (utilizzo < 75% dell'accordato)",
-                                               "bonifici che superano il totale accordato",
-                                               "corretto"))) %>%
+      arrange(categoria) %>%
+      mutate(categoria = factor(categoria,
+                                 levels = c("bonifici che superano il totale accordato",
+                                            "bonifici effettuati in presenza di saldo attivo",
+                                            "bonifici non necessari (utilizzo < 75% dell'accordato)",
+                                            "corretto"))) %>%
       filter(descrizione == "Bonifico a Vs Favore") %>%
       ggplot(aes(x = categoria, fill= categoria)) +
       geom_bar() +
       geom_text(aes(label = ..count..), stat = "count", vjust = -.3) +
-      scale_fill_discrete(labels = c("SA", "B < 75%", "BSA", "C")) +
+      scale_fill_discrete(labels = c("BSA", "SA", "B < 75%", "C")) +
       labs(y = "Conteggio Bonifici",
            title = "Classificazione Bonifici",
-           caption = "SA: Effettuati in Presenza di Saldo Attivo\n
-           B < 75%: Effettuati con Utilizzo inferiore al 75%\n
+           caption = "SA: Effettuati in Presenza di Saldo Attivo al giorno precedente\n
+           B < 75%: Effettuati con Utilizzo inferiore al 75% del giorno precedente\n
            BSA: Bonifici che superano il Totale Accordato\n
            C: Corretto") +
       theme_clean() +
