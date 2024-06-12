@@ -274,4 +274,33 @@ classificazione_reintegri <- function() {
   
   print(paste("File Excel generato col nome:", nome_file))
   
+  domanda_grafico <- readline("Vuoi generare il grafico del dettaglio classificazione bonifici di reintegro? (SI/NO): ")
+  
+  grafico_classificazione <- if (toupper(domanda_grafico) == "SI"){
+    joined_df %>%
+      mutate(decrizione = factor(descrizione,
+                                    levels = c("bonifici effettuati in presenza di saldo attivo",
+                                               "bonifici non necessari (utilizzo < 75% dell'accordato)",
+                                               "bonifici che superano il totale accordato",
+                                               "corretto"))) %>%
+      filter(descrizione == "Bonifico a Vs Favore") %>%
+      ggplot(aes(x = categoria, fill= categoria)) +
+      geom_bar() +
+      geom_text(aes(label = ..count..), stat = "count", vjust = -.3) +
+      scale_fill_discrete(labels = c("SA", "B < 75%", "BSA", "C")) +
+      labs(y = "Conteggio Bonifici",
+           title = "Classificazione Bonifici",
+           caption = "SA: Effettuati in Presenza di Saldo Attivo\n
+           B < 75%: Effettuati con Utilizzo inferiore al 75%\n
+           BSA: Bonifici che superano il Totale Accordato\n
+           C: Corretto") +
+      theme_clean() +
+      theme(axis.text.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            plot.title = element_text(hjust = .5),
+            legend.position = "top",
+            legend.title = element_blank())
+  }
+  
 }
